@@ -6,7 +6,11 @@ A dark, quiet UI kit for work that gets filled in: intake, review queues, record
 |---|---|
 | `KINETIC-ENTERPRISE-UI-KIT.md` | The spec. §9 is an instructions block to paste into a chat assistant. |
 | `kinetic-enterprise.tsx` | The whole React library in one file. React 18 only; the stylesheet is built in. |
-| `kinetic-enterprise.css` | The same styles for plain HTML. |
+| `kinetic-enterprise.css` | The same styles for plain HTML. The source of truth for both. |
+| `build.mjs` | `node build.mjs` re-embeds the CSS in the TSX after you edit the CSS. No dependencies. |
+| `CHANGELOG.md` | What changed in each version. |
+
+Current version: 2.4.0. It adds Menu, CopyValue, Pagination and FileDrop; a high-contrast theme (`data-theme="dark-hc"`); full keyboard support for Tabs, Menu and Dialog; and control borders that meet 3:1 on every surface.
 
 ## Raw links for assistants
 

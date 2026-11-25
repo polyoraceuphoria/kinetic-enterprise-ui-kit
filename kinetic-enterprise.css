@@ -1,8 +1,9 @@
 /* ============================================================
-   KINETIC ENTERPRISE · single-file library for ChatGPT builds
+   KINETIC ENTERPRISE · single-file library for ChatGPT builds · v2.4.0
    Flattened from Kinetic UI Kit v2.3.0: kernel.css + enterprise.css
-   (writing register, core control set). Values are unchanged.
-   One file, no build step. Load fonts, then this file.
+   (writing register, core control set), with the 2.4.0 changes in
+   CHANGELOG.md. One file, no build step. Load fonts, then this file.
+   Themes: dark (default) and [data-theme="dark-hc"] high contrast.
    ============================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;600&display=swap');
 
@@ -19,9 +20,6 @@
   --green-b:#5BD86B;
   --green-dim:rgba(60,180,75,.10);
 
-  /* alerts */
-  --amber:#C9A44D;
-  --red:#B96B5E;
 
   /* voices */
   --serif:'Cormorant Garamond',serif;
@@ -38,10 +36,13 @@
   /* z-scale (never invent a z-index) */
   --z-nav:50; --z-gate:60; --z-modal:70; --z-toast:80;
 
-  /* legacy aliases (fleet compatibility, do not use in new work) */
+  /* DEPRECATED legacy aliases (fleet compatibility). Removed in 3.0.
+     Use --fg --muted --dim --green --green-b --green-dim --warn --bad. */
   --ink:var(--fg); --ink-2:var(--muted); --ink-3:var(--dim);
   --accent:var(--green); --accent-b:var(--green-b);
   --sig:var(--green); --sig-2:var(--green-b); --sig-dim:var(--green-dim);
+  --amber:var(--warn); --red:var(--bad);
+
 }
 
 *{margin:0;padding:0;box-sizing:border-box}
@@ -54,13 +55,13 @@ body{color:var(--fg);font-family:var(--sans);-webkit-font-smoothing:antialiased}
 
 /* three voices: serif states, mono proves, sans explains */
 .mono{font-family:var(--mono)}
-.kicker,.lbl{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim)}
+.kicker,.lbl{font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:var(--ls-mono);text-transform:uppercase;color:var(--dim)}
 
 /* screen-reader only */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
 /* keyboard hint */
-kbd{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--dim);border:1px solid var(--faint);border-radius:3px;padding:2px 6px}
+kbd{font-family:var(--mono);font-size:var(--fs-2xs);letter-spacing:var(--ls-kbd);color:var(--dim);border:1px solid var(--line-s);border-radius:var(--radius-kbd);padding:2px 6px}
 
 /* skeleton loading (shared shimmer, both screen registers) */
 .skel{display:inline-block;background:var(--faint);opacity:.35;border-radius:2px;animation:k-skel 1.4s var(--ease) infinite;color:transparent!important;pointer-events:none;user-select:none}
@@ -171,7 +172,19 @@ kbd{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--dim
   /* v2 panel audit: metadata ink AA at 9.5px on this canvas (4.5:1 on all three surfaces) */
   --dim:#828B95;
   /* interactive boundary: 3:1 non-text contrast against control bg (WCAG 1.4.11) */
-  --line-i:#606B77;
+  --line-i:#6A7581;
+  --field-bg:#12171C;
+  --on-green:#0A0A0A;
+  --radius-panel:8px; --radius-pill:99px; --radius-kbd:3px;
+  /* only menus and popovers cast a shadow */
+  --shadow-menu:0 8px 24px rgba(0,0,0,.45),0 0 0 1px rgba(0,0,0,.2);
+}
+
+/* high-contrast theme: text 7:1, every boundary 3:1, on all three surfaces */
+[data-theme="dark-hc"]{
+  --fg:#F4F2EE; --muted:#C6CBD1; --dim:#B3BAC2; --faint:#5E6975;
+  --green-b:#7CEA8A; --ok:#B4D3A9; --warn:#E3BC75; --bad:#EBA79B;
+  --line:#6B7682; --line-s:#7F8A96; --line-i:#9AA5B1;
 }
 
 body{background:var(--bg);font-size:var(--fs-xl);line-height:var(--lh-base)}
@@ -197,7 +210,7 @@ h1.ent b{color:var(--green-b);font-weight:var(--fw-medium)}
 .lead b{color:var(--fg);font-weight:var(--fw-medium)}
 
 /* ---- panels carry forms ---- */
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px 22px;margin-bottom:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-panel);padding:20px 22px;margin-bottom:14px}
 .panel h4{font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:var(--ls-wide);color:var(--dim);font-weight:var(--fw-regular);margin-bottom:10px;text-transform:uppercase}
 .panel p{font-size:var(--fs-base-5);color:var(--muted);max-width:700px}
 .panel p b{color:var(--fg);font-weight:var(--fw-medium)}
@@ -218,22 +231,22 @@ table.ent td:first-child{color:var(--fg);font-family:var(--mono);font-size:var(-
 table.ent tr:hover td{background:rgba(60,180,75,.05)}
 
 /* ---- pills (muted status, dot carries state) ---- */
-.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-s);border-radius:99px;background:var(--surface-2);padding:5px 12px;font-family:var(--mono);font-size:var(--fs-xs);font-weight:var(--fw-semi);letter-spacing:var(--ls-pill)}
+.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-s);border-radius:var(--radius-pill);background:var(--surface-2);padding:5px 12px;font-family:var(--mono);font-size:var(--fs-xs);font-weight:var(--fw-semi);letter-spacing:var(--ls-pill)}
 .pill .dot{width:6px;height:6px;border-radius:50%;background:var(--dim)}
 .pill.ok{color:var(--green-b);border-color:rgba(60,180,75,.3)}.pill.ok .dot{background:var(--green)}
 .pill.warn{color:var(--warn);border-color:rgba(199,154,78,.35)}.pill.warn .dot{background:var(--warn)}
-.pill.bad{color:var(--bad);border-color:rgba(185,107,94,.35)}.pill.bad .dot{background:var(--bad)}
+.pill.bad{color:var(--bad);border-color:rgba(201,127,114,.35)}.pill.bad .dot{background:var(--bad)}
 
 /* ---- buttons ---- */
 .btn{display:inline-block;border:1px solid var(--line-s);border-radius:var(--radius);background:var(--surface-2);color:var(--fg);font-family:var(--mono);font-size:var(--fs-sm);font-weight:var(--fw-semi);letter-spacing:var(--ls-btn);padding:10px 18px;cursor:pointer;text-decoration:none}
 .btn:hover{border-color:var(--dim);background:var(--surface)}
-.btn.primary{background:var(--green);color:#0A0A0A;border-color:var(--green);font-weight:var(--fw-semi)}
+.btn.primary{background:var(--green);color:var(--on-green);border-color:var(--green);font-weight:var(--fw-semi)}
 .btn.primary:hover{background:var(--green-b)}
 
 /* ---- fields (real controls, signal focus) ---- */
 .field{margin-bottom:12px;max-width:420px}
 .field label{display:block;font-family:var(--mono);font-size:var(--fs-2xs);font-weight:var(--fw-semi);letter-spacing:var(--ls-label);color:var(--muted);text-transform:uppercase;margin-bottom:6px}
-.field input,.field select,.field textarea{width:100%;background:#12171C;border:1px solid var(--line-i);caret-color:var(--green-b);border-radius:var(--radius);color:var(--fg);font-family:var(--sans);font-size:var(--fs-base-5);padding:11px 13px;outline:none}
+.field input,.field select,.field textarea{width:100%;background:var(--field-bg);border:1px solid var(--line-i);caret-color:var(--green-b);border-radius:var(--radius);color:var(--fg);font-family:var(--sans);font-size:var(--fs-base-5);padding:11px 13px;outline:none}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green);outline:2px solid rgba(60,180,75,.25)}
 
 /* ---- notes ---- */
@@ -272,7 +285,7 @@ table.ent tr:hover td{background:rgba(60,180,75,.05)}
 
 /* ---- sidebar extensions ---- */
 .shell nav .nbadge{float:right;font-family:var(--mono);font-size:var(--fs-2xs);color:var(--dim);padding-top:2px}
-.shell nav button.on .nbadge{color:var(--green-b)}
+.shell nav button.on .nbadge,.shell nav a.on .nbadge{color:var(--green-b)}
 .shell nav button:disabled{color:var(--faint);cursor:default}
 
 /* ---- breadcrumbs ---- */
@@ -297,14 +310,14 @@ table.ent tr:hover td{background:rgba(60,180,75,.05)}
 .btn.primary:disabled:hover{background:var(--green)}
 .btn.ghost{background:none;border-color:transparent;color:var(--muted)}
 .btn.ghost:hover{color:var(--fg);background:var(--surface-2)}
-.btn.danger{color:var(--bad);border-color:rgba(185,107,94,.4)}
-.btn.danger:hover{border-color:var(--bad);background:rgba(185,107,94,.08)}
-.btn.danger.solid{background:var(--bad);color:#0A0A0A;font-weight:var(--fw-semi)}
+.btn.danger{color:var(--bad);border-color:rgba(201,127,114,.4)}
+.btn.danger:hover{border-color:var(--bad);background:rgba(201,127,114,.08)}
+.btn.danger.solid{background:var(--bad);color:var(--on-green);font-weight:var(--fw-semi)}
 .btn.sm{padding:6px 12px;font-size:var(--fs-xs)}
 .btn.lg{padding:13px 22px;font-size:var(--fs-md)}
 .btn.loading{pointer-events:none;position:relative;color:transparent}
 .btn.loading:after{content:"";position:absolute;inset:0;margin:auto;width:12px;height:12px;border:1.5px solid var(--dim);border-top-color:var(--green-b);border-radius:50%;animation:ent-spin .7s linear infinite}
-.btn.primary.loading:after{border-color:rgba(10,10,10,.35);border-top-color:#0A0A0A}
+.btn.primary.loading:after{border-color:rgba(10,10,10,.35);border-top-color:var(--on-green)}
 @keyframes ent-spin{to{transform:rotate(360deg)}}
 .btngroup{display:inline-flex}
 .btngroup .btn{border-radius:0}
@@ -339,12 +352,12 @@ table.ent tr:hover td{background:rgba(60,180,75,.05)}
 
 /* ---- choice controls ---- */
 .check{display:flex;gap:10px;align-items:flex-start;font-size:var(--fs-base-5);color:var(--muted);padding:6px 0;cursor:pointer;max-width:560px}
-.check input{appearance:none;width:16px;height:16px;min-width:16px;border:1px solid var(--line-i);border-radius:3px;background:var(--bg);cursor:pointer;margin-top:1px;transition:all var(--t-fast);position:relative}
+.check input{appearance:none;width:16px;height:16px;min-width:16px;border:1px solid var(--line-i);border-radius:var(--radius-kbd);background:var(--bg);cursor:pointer;margin-top:1px;transition:all var(--t-fast);position:relative}
 .check input:hover{border-color:var(--dim)}
 .check input:checked{background:var(--green);border-color:var(--green)}
-.check input:checked:after{content:"";position:absolute;left:5px;top:2px;width:4px;height:8px;border:solid #0A0A0A;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.check input:checked:after{content:"";position:absolute;left:5px;top:2px;width:4px;height:8px;border:solid var(--on-green);border-width:0 2px 2px 0;transform:rotate(45deg)}
 .check input:indeterminate{background:var(--green);border-color:var(--green)}
-.check input:indeterminate:after{content:"";position:absolute;left:3px;top:6px;width:8px;height:2px;background:#0A0A0A}
+.check input:indeterminate:after{content:"";position:absolute;left:3px;top:6px;width:8px;height:2px;background:var(--on-green)}
 .check input:disabled{opacity:.4;cursor:not-allowed}
 .check input:disabled~span{color:var(--faint)}
 .check.radio input{border-radius:50%}
@@ -354,10 +367,10 @@ table.ent tr:hover td{background:rgba(60,180,75,.05)}
 
 /* ---- toggle switch ---- */
 .toggle{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:var(--fs-base-5);color:var(--muted)}
-.toggle input{appearance:none;width:34px;height:19px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line-i);position:relative;cursor:pointer;transition:background var(--t-base)}
+.toggle input{appearance:none;width:34px;height:19px;border-radius:var(--radius-pill);background:var(--surface-2);border:1px solid var(--line-i);position:relative;cursor:pointer;transition:background var(--t-base)}
 .toggle input:after{content:"";position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:var(--dim);transition:all var(--t-base) var(--ease)}
 .toggle input:checked{background:var(--green);border-color:var(--green)}
-.toggle input:checked:after{left:17px;background:#0A0A0A}
+.toggle input:checked:after{left:17px;background:var(--on-green)}
 .toggle input:disabled{opacity:.4;cursor:not-allowed}
 
 /* ---- file drop ---- */
@@ -404,7 +417,7 @@ tr.ent-empty td{text-align:center;color:var(--dim);padding:44px 0;font-size:var(
 .note.info b{color:var(--fg)}
 .note.warn{background:rgba(199,154,78,.07);border-color:rgba(199,154,78,.3)}
 .note.warn b{color:var(--warn)}
-.note.bad{background:rgba(185,107,94,.07);border-color:rgba(185,107,94,.3)}
+.note.bad{background:rgba(201,127,114,.07);border-color:rgba(201,127,114,.3)}
 .note.bad b{color:var(--bad)}
 .note .dismiss{float:right;background:none;border:0;color:var(--dim);cursor:pointer;font-size:var(--fs-lg);line-height:var(--lh-none);padding:0;margin-left:12px;min-width:24px;min-height:24px;display:inline-flex;align-items:center;justify-content:center}
 .note .dismiss:hover{color:var(--fg)}
@@ -443,7 +456,7 @@ tr.ent-empty td{text-align:center;color:var(--dim);padding:44px 0;font-size:var(
 .dl dd b{color:var(--fg);font-weight:var(--fw-medium)}
 
 /* ---- progress bar ---- */
-.bar{height:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;overflow:hidden;max-width:420px}
+.bar{height:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-pill);overflow:hidden;max-width:420px}
 .bar i{display:block;height:100%;background:var(--green);transition:width var(--t-slow) var(--ease)}
 .bar.warn i{background:var(--warn)}
 .bar-cap{font-family:var(--mono);font-size:var(--fs-xs);color:var(--dim);margin-top:6px;letter-spacing:var(--ls-btn)}
@@ -453,7 +466,7 @@ tr.ent-empty td{text-align:center;color:var(--dim);padding:44px 0;font-size:var(
 .ent-state .glyph{font-family:var(--serif);font-size:var(--fs-h2);color:var(--dim);display:inline-flex;width:44px;height:44px;border:1px solid var(--line-s);border-radius:50%;align-items:center;justify-content:center;margin-bottom:14px}
 .ent-state h4{font-family:var(--serif);font-weight:var(--fw-medium);font-size:var(--fs-title);color:var(--fg);margin-bottom:6px;letter-spacing:var(--ls-tight);text-transform:none}
 .ent-state p{font-size:var(--fs-md-5);color:var(--dim);margin:0 auto 16px;max-width:380px}
-.ent-state.err .glyph{color:var(--bad);border-color:rgba(185,107,94,.4)}
+.ent-state.err .glyph{color:var(--bad);border-color:rgba(201,127,114,.4)}
 
 /* ---- skeleton panel ---- */
 .skelrow{display:flex;gap:12px;align-items:center;padding:10px 0}
@@ -481,7 +494,7 @@ table.ent td.hash{font-family:var(--mono);font-size:var(--fs-sm);word-break:brea
 @keyframes ent-indet{0%{margin-left:-38%}100%{margin-left:100%}}
 
 /* browser autofill keeps the register (no yellow flash) */
-.field input:-webkit-autofill{-webkit-box-shadow:0 0 0 60px #12171C inset;-webkit-text-fill-color:var(--fg)}
+.field input:-webkit-autofill{-webkit-box-shadow:0 0 0 60px var(--field-bg) inset;-webkit-text-fill-color:var(--fg)}
 
 /* forced colors: state must survive high-contrast mode */
 @media(forced-colors:active){
@@ -493,5 +506,51 @@ table.ent td.hash{font-family:var(--mono);font-size:var(--fs-sm);word-break:brea
 /* ============================================================
    v2.2.0 · SKIP NAVIGATION (docs lane, SKIP.md)
    ============================================================ */
-.skip{position:absolute;top:-100%;left:var(--s4);z-index:calc(var(--z-toast) + 1);background:var(--surface);color:var(--green-b);font-family:var(--mono);font-size:var(--fs-sm);letter-spacing:.1em;text-transform:uppercase;text-decoration:none;padding:var(--s3) var(--s4);border:1px solid var(--green);border-radius:var(--radius)}
+.skip{position:absolute;top:-100%;left:var(--s4);z-index:calc(var(--z-toast) + 1);background:var(--surface);color:var(--green-b);font-family:var(--mono);font-size:var(--fs-sm);letter-spacing:var(--ls-btn);text-transform:uppercase;text-decoration:none;padding:var(--s3) var(--s4);border:1px solid var(--green);border-radius:var(--radius)}
 .skip:focus-visible{top:var(--s4);outline:1px solid var(--green);outline-offset:3px}
+
+/* ============================================================
+   v2.4.0 · ENTERPRISE ADDITIONS
+   Wrappers for the CSS-only extras, menus, copy, keyboardable
+   sort, toast dismiss. Every value from a token.
+   ============================================================ */
+
+/* sortable header: the button carries focus, th carries aria-sort */
+table.ent th .sortbtn{all:unset;cursor:pointer;display:inline-flex;gap:var(--s1);align-items:center}
+table.ent th .sortbtn:hover{color:var(--fg)}
+table.ent th .sortbtn:focus-visible{outline:1px solid var(--green);outline-offset:3px}
+table.ent th .sortbtn .arr{color:var(--faint)}
+table.ent th[aria-sort] .sortbtn{color:var(--fg)}
+table.ent th[aria-sort] .sortbtn .arr{color:var(--green-b)}
+
+/* copy value: identifiers are never truncated without a copy affordance */
+.copy{display:inline-flex;align-items:center;gap:var(--s2);max-width:100%}
+.copy code{font-family:var(--mono);font-size:var(--fs-sm-5);color:var(--fg);overflow-wrap:anywhere}
+.copy button{background:none;border:1px solid var(--line-s);border-radius:var(--radius);color:var(--dim);font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:var(--ls-btn);text-transform:uppercase;padding:3px 8px;min-height:24px;cursor:pointer;transition:color var(--t-fast),border-color var(--t-fast)}
+.copy button:hover{color:var(--fg);border-color:var(--dim)}
+.copy button.done{color:var(--green-b);border-color:var(--green)}
+
+/* menu: the one surface that casts a shadow */
+.menuwrap{position:relative;display:inline-block}
+.menu{position:absolute;top:calc(100% + var(--s1));left:0;min-width:180px;background:var(--surface);border:1px solid var(--line-s);border-radius:var(--radius);box-shadow:var(--shadow-menu);padding:var(--s1);z-index:var(--z-nav);animation:ent-pop var(--t-fast) var(--ease)}
+.menu.end{left:auto;right:0}
+.menu [role=menuitem]{display:block;width:100%;text-align:left;background:none;border:0;border-radius:4px;color:var(--muted);font-family:var(--sans);font-size:var(--fs-base);padding:8px 10px;cursor:pointer}
+.menu [role=menuitem]:hover,.menu [role=menuitem]:focus-visible{background:var(--surface-2);color:var(--fg);outline:none}
+.menu [role=menuitem].danger{color:var(--bad)}
+.menu [role=menuitem]:disabled{color:var(--faint);cursor:default;background:none}
+.menu hr{border:0;border-top:1px solid var(--line);margin:var(--s1) 0}
+
+/* file drop as a real control */
+.drop{display:block;position:relative}
+.drop input{position:absolute;width:1px;height:1px;opacity:0}
+.drop:focus-within{border-color:var(--green);outline:1px solid var(--green);outline-offset:3px}
+.drop ul{list-style:none;margin-top:var(--s3);text-align:left;font-family:var(--mono);font-size:var(--fs-sm);color:var(--muted)}
+
+/* toast dismiss */
+.toast{position:relative}
+.toast.dis{padding-right:40px}
+.toast .dismiss{position:absolute;top:6px;right:6px;background:none;border:0;color:var(--dim);font-size:var(--fs-lg);line-height:var(--lh-none);min-width:24px;min-height:24px;cursor:pointer}
+.toast .dismiss:hover{color:var(--fg)}
+
+/* tabs: panel focus */
+.enttabs+[role=tabpanel]:focus-visible{outline:1px solid var(--green);outline-offset:3px}
