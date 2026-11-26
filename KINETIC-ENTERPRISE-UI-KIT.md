@@ -1,6 +1,6 @@
 # Kinetic Enterprise UI Kit
 
-**Version** 2.3.0-chatgpt · **Register** Enterprise (the writing register) · **Source** Kinetic UI Kit v2.3.0, `kernel.css` + `enterprise.css`
+**Version** 2.4.0-chatgpt · **Register** Enterprise (the writing register) · **Source** Kinetic UI Kit v2.3.0, `kernel.css` + `enterprise.css`
 
 **Product** Name your product and current workspace in the instructions block in §9.
 
@@ -15,7 +15,7 @@ This document is the spec. The library is two files that implement it:
 | `kinetic-enterprise.tsx` | You are building in React (a ChatGPT or Wisp canvas, an app widget, a Next.js page). One file, no dependencies beyond React 18. The stylesheet is inlined. |
 | `kinetic-enterprise.css` | You are writing plain HTML, or any framework that takes class names. |
 
-Both carry the same values. The CSS file is the source; `node build.mjs` regenerates the TSX from it.
+Both carry the same values. The CSS file is the source; `node build.mjs` re-embeds it in the TSX. Changes by version are in `CHANGELOG.md`.
 
 ---
 
@@ -37,7 +37,7 @@ If ChatGPT cannot read an attachment, paste `kinetic-enterprise.tsx` into the ch
 4. **Muted status.** Warning and error inks are desaturated (`--warn`, `--bad`). Status is carried by a dot or a left rule, not by a coloured block.
 5. **Every control has every state.** Rest, hover, focus, active, disabled, loading, error, success, read-only. If a state is missing, the control is not finished.
 6. **Focus is visible.** A 1px green outline, offset 3px. Never remove it.
-7. **Surfaces, not shadows.** Depth is three flat layers (`--bg` → `--surface` → `--surface-2`) separated by 1px lines. Only menus and popovers cast a shadow.
+7. **Surfaces, not shadows.** Depth is three flat layers (`--bg` → `--surface` → `--surface-2`) separated by 1px lines. Only menus and popovers cast a shadow (`--shadow-menu`).
 8. **Degrade, never break.** Below 900px the sidebar becomes a top row and grids stack. Wide tables scroll inside their wrapper. Long hashes wrap.
 
 ---
@@ -53,7 +53,8 @@ If ChatGPT cannot read an attachment, paste `kinetic-enterprise.tsx` into the ch
 | `--surface-2` | `#1C242B` | Hover fill, pills, secondary buttons |
 | `--line` | `#2A323B` | Dividers, panel borders |
 | `--line-s` | `#364049` | Stronger borders (buttons, dialogs, menus) |
-| `--line-i` | `#606B77` | Input and checkbox borders (3:1 non-text contrast) |
+| `--line-i` | `#6A7581` | Input, checkbox and toggle borders (3:1 non-text contrast on all three surfaces) |
+| `--field-bg` | `#12171C` | Input, select and textarea fill |
 | `--fg` | `#E9E7E2` | Primary text |
 | `--muted` | `#9BA1A8` | Secondary text, body copy in panels |
 | `--dim` | `#828B95` | Labels, metadata (AA at 9.5px) |
@@ -64,6 +65,11 @@ If ChatGPT cannot read an attachment, paste `kinetic-enterprise.tsx` into the ch
 | `--ok` | `#8FAE84` | Success help text |
 | `--warn` | `#C79A4E` | Warning |
 | `--bad` | `#C97F72` | Error, destructive |
+| `--on-green` | `#0A0A0A` | Text and marks on a `--green` or `--bad` fill |
+
+### Themes
+
+Two themes, both dark. The default is the brand. `[data-theme="dark-hc"]` on the root is the high-contrast theme: every text ink reaches 7:1 and every border (`--line`, `--line-s`, `--line-i`) 3:1 on all three surfaces; surfaces and `--green` stay the same. Offer it as a user setting and follow `prefers-contrast: more`. Print is the only light surface.
 
 ### Type
 
@@ -82,10 +88,11 @@ Weights: `--fw-regular` 400 · `--fw-medium` 500 · `--fw-semi` 600. Mono labels
 | Group | Tokens |
 |---|---|
 | Space (4px base) | `--s1` 4 · `--s2` 8 · `--s3` 12 · `--s4` 16 · `--s5` 24 · `--s6` 32 · `--s7` 48 · `--s8` 64 |
-| Radius | `--radius` 6px (controls) · panels 8px · pills 99px |
+| Radius | `--radius` 6px (controls) · `--radius-panel` 8px · `--radius-pill` 99px · `--radius-kbd` 3px |
 | Width | `--maxw` 1180px main column · sidebar 248px |
 | Motion | `--t-fast` 120ms · `--t-base` 180ms · `--t-slow` 300ms · `--ease` cubic-bezier(.25,.1,.25,1) |
 | Z-index | `--z-nav` 50 · `--z-gate` 60 · `--z-modal` 70 · `--z-toast` 80 |
+| Shadow | `--shadow-menu` (menus and popovers only) |
 
 Motion is CSS only and switches off under `prefers-reduced-motion`.
 
@@ -133,6 +140,7 @@ Each entry gives the React part, the CSS class it renders, and the rule that gov
 |---|---|---|
 | `<Button variant size loading>` | `.btn` `.primary` `.ghost` `.danger` `.danger.solid` `.sm` `.lg` `.loading` | Labels are verbs, mono, short ("Assign", "Export"). One `primary` per view. `danger-solid` only inside a destructive dialog. |
 | `<ButtonGroup options value onChange label>` | `.btngroup` | Segmented choice of 2–4 options. Selected segment takes the green border. |
+| `<Menu label items onSelect align variant size>` | `.menuwrap` `.menu` | Secondary actions on a record. Down opens; arrows, Home, End move; Escape closes and returns focus. Destructive items take `danger`, sit last after a `"separator"`, and open a destructive Dialog. |
 
 ### Status
 
@@ -142,17 +150,18 @@ Each entry gives the React part, the CSS class it renders, and the rule that gov
 | `<Note intent title onDismiss>` | `.note` `.info` `.warn` `.bad` | Inline message within a page. Default intent is the green note. |
 | `<Progress value caption warn>` | `.bar` `.bar-cap` | Omit `value` for indeterminate. Caption is mono ("412 / 1,000 documents"). |
 | `<Steps steps current>` | `.steps` | Wizards of 3–6 steps. Done steps keep the green rule. |
-| `<Toasts items>` | `.toasts` `.toast` | Confirmations after an action. Top right, stacked. Title is past tense ("Exported"). |
+| `<Toasts items onDismiss>` | `.toasts` `.toast` | Confirmations after an action. Top right, stacked. Title is past tense ("Exported"). Pass `onDismiss` for anything that stays longer than 5s. |
 
 ### Forms
 
 | React | Class | Rule |
 |---|---|---|
-| `<TextField label help error success required>` | `.field` | Label is mono uppercase above the input. Help sits below. `error` replaces help and turns it `--bad`. |
-| `<TextArea …>` | `.field textarea` | Resizes vertically. Minimum 88px. |
+| `<TextField label help error success required prefix suffix>` | `.field` `.affix` | Label is mono uppercase above the input. Help sits below. `error` replaces help and turns it `--bad`. `prefix` and `suffix` are short mono affixes (a unit, a scheme). |
+| `<TextArea … maxLength>` | `.field textarea` `.cnt` | Resizes vertically. Minimum 88px. `maxLength` shows a live counter that turns `--bad` past the limit. |
 | `<Select options …>` | `.field select` | Native select, kit chevron. |
-| `<Checkbox label radio>` | `.check` `.check.radio` | Label sits right of the box. |
+| `<Checkbox label radio indeterminate>` | `.check` `.check.radio` | Label sits right of the box. `indeterminate` for a partial selection. |
 | `<Toggle label>` | `.toggle` | Immediate settings only. If it needs a Save, use a checkbox. |
+| `<FileDrop label hint accept multiple onFiles>` | `.drop` | A drop zone that is also a keyboard-reachable file input. State limits in `hint`. |
 | `<Fieldset legend>` | `.fset` | Groups related fields under a ruled mono legend. |
 | `<FormFoot note>` | `.formfoot` | Sticky row: save note left, buttons right, primary last. |
 
@@ -162,9 +171,11 @@ Fields are 420px wide at most. Errors are stated plainly and say how to fix them
 
 | React | Class | Rule |
 |---|---|---|
-| `<DataTable columns rows rowKey label dense selected onToggleRow>` | `.tblwrap` `table.ent` | First column is the identifier, in mono. Numbers set `num` (right-aligned, tabular). Hashes set `hash` (wrap anywhere). Always pass `label` for the scroll region. |
+| `<DataTable columns rows rowKey label dense selected onToggleRow onToggleAll sort onSort>` | `.tblwrap` `table.ent` | First column is the identifier, in mono. Numbers set `num` (right-aligned, tabular). Hashes set `hash` (wrap anywhere). Columns with `sortable` get header buttons and `aria-sort`; the consumer sorts the rows. `onToggleAll` adds a select-all box. Always pass `label` for the scroll region. |
+| `<Pagination page pageCount onChange caption>` | `.tblfoot` | Under its table. First, last, current and adjacent pages. |
 | `<BulkBar count>` | `.bulkbar` | Appears only while rows are selected. Count in mono green. |
 | `<DescriptionList items>` | `.dl` | Record detail: mono term, sans detail. |
+| `<CopyValue value label>` | `.copy` | Any ID, hash or address a person will paste elsewhere. Never truncate an identifier without one. |
 | `<StatBand stats>` | `.band` | Four headline figures. `muted` for figures that are not a signal. |
 | `<EmptyState glyph title action error>` | `.ent-state` | Every list has one. Says what will appear and how to make it appear. |
 | `<Skeleton widths>` | `.skelrow` `.skel` | Loading rows. Never a spinner over a whole page. |
@@ -173,13 +184,13 @@ Fields are 420px wide at most. Errors are stated plainly and say how to fix them
 
 | React | Class | Rule |
 |---|---|---|
-| `<Tabs tabs value onChange>` | `.enttabs` | Sections within one record. Not for top-level navigation. |
-| `<Dialog open title onClose footer destructive>` | `.ent-scrim` `.dialog` | Closes on Escape and on scrim click. Destructive dialogs title in `--bad` and name the thing being deleted. |
+| `<Tabs tabs value onChange idBase>` + `<TabPanel idBase value>` | `.enttabs` | Sections within one record. Not for top-level navigation. Arrow keys, Home and End move between tabs; pass the same `idBase` to link each tab to its panel. |
+| `<Dialog open title onClose footer destructive>` | `.ent-scrim` `.dialog` | Moves focus inside on open, traps Tab, locks page scroll, closes on Escape and scrim click, and returns focus to its opener. Destructive dialogs are `alertdialog`, title in `--bad` and name the thing being deleted. |
 | `<Kbd>` | `kbd` | Keyboard hints. |
 
 ### CSS-only extras
 
-`kinetic-enterprise.css` also carries classes with no React wrapper yet: `.affix` (input prefix/suffix), `.cnt` (character count), `.drop` (file drop zone), `.tblfoot` (pager), `table.ent th.sort` (sortable headers), `.skip`. Use them by class name.
+For plain HTML, `table.ent th.sort` with `.asc` or `.desc` marks a sortable header (React uses `.sortbtn` inside the `th`), and `.skip` is the skip link that `Shell` renders. Every other class has a React part above.
 
 ---
 
@@ -197,11 +208,16 @@ Fields are 420px wide at most. Errors are stated plainly and say how to fix them
 
 ## 7. Accessibility
 
-- Text meets WCAG AA on all three surfaces; input borders meet 3:1 (1.4.11).
+The target is WCAG 2.2 AA in the default theme and AAA text contrast in `dark-hc`.
+
+- Text meets AA on all three surfaces; control borders meet 3:1 on all three (1.4.11).
 - Every interactive part is reachable by keyboard and shows the green focus ring.
-- Table wrappers are focusable regions with a label (2.1.1).
-- Fields link help and errors through `aria-describedby`; errors set `aria-invalid`.
-- Toggles use `role="switch"`; tabs use `role="tab"` with `aria-selected`; the active nav item has `aria-current="page"`.
+- Table wrappers are focusable regions with a label and a caption (2.1.1).
+- Keyboard patterns follow the ARIA practices: Tabs (arrows, Home, End, one tab stop), Menu (Down opens, arrows move, Escape closes and returns focus), Dialog (focus trapped, Escape closes, focus restored).
+- Fields link help, errors, affixes and counters through `aria-describedby`; errors set `aria-invalid`.
+- Toggles use `role="switch"`; tabs use `role="tab"` with `aria-selected`; the active nav item, current page and current step carry `aria-current`; sorted headers carry `aria-sort`.
+- Status changes are announced: toasts and save notes politely, errors and destructive dialogs as alerts.
+- Small targets (dismiss, copy, pager) are at least 24px square (2.5.8).
 - Forced-colours mode keeps active nav and progress visible.
 - Reduced motion stops animation without hiding state.
 
@@ -236,6 +252,7 @@ Rules:
 - Mono for identifiers, numbers, dates, hashes and labels. Serif only for page, dialog and empty-state titles. Sans for everything else.
 - Green (--green) means selected, primary, healthy or focused, nothing else. Status uses <Pill intent="ok|warn|bad">.
 - Every list has an EmptyState; every async view has a Skeleton; every form field has a label and, when invalid, an error that says how to fix it.
+- Secondary record actions go in a <Menu>; identifiers and hashes use <CopyValue>; long tables get <Pagination>.
 - Tone: minimal and serious. No emoji, no exclamation marks, no marketing copy. Use realistic sample data for legal, investigative and crisis work.
 - Before finishing, check: tokens only, every control has its states, keyboard focus visible, layout holds at 375px.
 ```
@@ -263,7 +280,7 @@ export default function Intake() {
         brandSub="WORKSPACE"
         active="intake"
         nav={[{ title: "Operation", items: [{ id: "intake", label: "Intake", badge: 12 }, { id: "matters", label: "Matters" }] }]}
-        foot="build 2.3.0 · data as of 2026-11-15"
+        foot="build 2.4.0 · data as of 2026-11-15"
       >
         <PageHeader kicker="Product · Workspace" title="Intake" lead="Signals waiting for triage, newest first." />
         <StatBand stats={[
